@@ -5,52 +5,71 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
-@Getter
-// 序列化成Json字符串的时候将NULL值去除
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class CommonResponse<T> {
+import java.io.Serializable;
 
-    private Integer code;
-    private String message;
+
+@Getter
+//JSON序列化为空的东西不会被序列化
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CommonResponse<T> implements Serializable {
+
+    private int status;
+    private String msg;
     private T data;
 
-    // 用来给静态函数的接口构造CommonResponse
-    protected CommonResponse(Integer code, String message, T data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
+    private CommonResponse(int status){
+        this.status = status;
+    }
+    private CommonResponse(int status,String msg){
+        this.status = status;
+        this.msg=msg;
+    }
+    private CommonResponse(int status,String msg,T data){
+        this.status = status;
+        this.msg=msg;
+        this.data=data;
+    }
+    private CommonResponse(int status,T data){
+        this.status = status;
+        this.data=data;
     }
 
-    // 这个不需要序列化
+    //JSON序列化，不会序列success
     @JsonIgnore
-    // 用于判断成功与否
-    public boolean isSuccess() {
-        return this.code == ResponseCode.SUCCESS.getCode();
+    public boolean isSuccess(){
+        return this.status==ResponseCode.SUCCESS.getCode();
     }
 
-    // 请求成功，无数据返回
-    public static <T> CommonResponse<T> createForSuccess() {
-        return new CommonResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getDescription(), null);
+
+    public static <T> CommonResponse<T> createForSuccess(){
+        return new CommonResponse<T>(ResponseCode.SUCCESS.getCode());
+    }
+    public static <T> CommonResponse<T> createForSuccess(T data){
+        return new CommonResponse<T>(ResponseCode.SUCCESS.getCode(),data);
+    }
+    public static <T> CommonResponse<T> createForSuccessMessage(String msg){
+        return new CommonResponse<T>(ResponseCode.SUCCESS.getCode(),msg);
+    }
+    public static <T> CommonResponse<T> createForSuccess(String msg,T data){
+        return new CommonResponse<T>(ResponseCode.SUCCESS.getCode(),msg,data);
     }
 
-    // 请求成功，并返回响应数据
-    public static <T> CommonResponse<T> createForSuccess(T return_data) {
-        return new CommonResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getDescription(), return_data);
+
+    public static <T> CommonResponse<T> createForError(){
+        return new CommonResponse<T>(ResponseCode.ERROR.getCode(),ResponseCode.ERROR.getDescription());
+    }
+    public static <T> CommonResponse<T> createForError(String msg){
+        return new CommonResponse<T>(ResponseCode.ERROR.getCode(),msg);
+    }
+    public static <T> CommonResponse<T> createForError(int code,String msg){
+        return new CommonResponse<T>(code,msg);
     }
 
-    // 请求错误，默认错误信息
-    public static <T> CommonResponse<T> createForError() {
-        return new CommonResponse<>(ResponseCode.ERROR.getCode(), ResponseCode.ERROR.getDescription(), null);
-    }
 
-    // 请求错误，指定错误信息
-    public static <T> CommonResponse<T> createForError(String err_message) {
-        return new CommonResponse<>(ResponseCode.ERROR.getCode(), err_message, null);
+    public static <T> CommonResponse<T> createForNeedLogin(){
+        return new CommonResponse<T>(ResponseCode.NEED_LOGIN.getCode());
     }
-
-    // 请求错误，指定错误码和错误信息
-    public static <T> CommonResponse<T> createForError(Integer code, String err_message) {
-        return new CommonResponse<>(code, err_message, null);
+    public static <T> CommonResponse<T> createForNeedLogin(String msg){
+        return new CommonResponse<T>(ResponseCode.NEED_LOGIN.getCode(),msg);
     }
-
 }
