@@ -12,4 +12,8 @@ public interface UserService {
     User findUserById(String id);
     CommonResponse<User> updateUser(User user);
     User findUserByPhone(String phone);
+
+    CommonResponse<User> updateUserById(User user);
+    CommonResponse<User> updateUserById_2(User user);
+
 }

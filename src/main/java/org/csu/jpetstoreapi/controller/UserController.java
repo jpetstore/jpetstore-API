@@ -8,16 +8,21 @@ import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.Sms;
 import org.csu.jpetstoreapi.entity.User;
 import org.csu.jpetstoreapi.service.UserService;
+import org.csu.jpetstoreapi.util.*;
 import org.csu.jpetstoreapi.util.AuthCodeUtil;
 import org.csu.jpetstoreapi.util.RandomNumberUtil;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import javax.imageio.ImageIO;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -28,6 +33,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Controller
 @Validated
@@ -66,11 +72,12 @@ public class UserController {
 
     //判断用户是否存在
     @GetMapping("idIsExist")
+    @ResponseBody
     public void idIsExist(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         User user = userService.findUserById(id);
 //        System.out.println("id= "+id);
-//        System.out.println(user);
+        System.out.println(user);
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
         if(id==""||id==null){
@@ -324,4 +331,97 @@ public class UserController {
 
         }
     }
+
+    //忘记密码发送新密码到手机号
+    @PostMapping("/passwordMSG")
+    @ResponseBody
+    public CommonResponse passwordMSG(HttpServletRequest request, String phoneNumber, String id, Model model){
+
+        String apiUrl = "https://sms_developer.zhenzikj.com";
+        String appId  = "111103";
+        String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
+        String newPassword = "";
+
+//        System.out.println(id);
+        User user = userService.findUserById(id);
+        System.out.println(user);
+
+        if(user == null){
+            return CommonResponse.createForError("用户名不存在！");
+        } else if (!user.getPhone().equals(phoneNumber)) {
+            return CommonResponse.createForError("用户名与手机号不匹配！");
+        }else {
+            try{
+                newPassword = RandomNumberUtil.getRandomNumber();
+                ZhenziSmsClient client = new ZhenziSmsClient(apiUrl, appId, appSecret);
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("number", phoneNumber);
+                params.put("templateId", "8515");
+                String[] templateParams = new String[1];
+                templateParams[0] = newPassword;
+
+                params.put("templateParams", templateParams);
+                String result = client.send(params);
+
+                System.out.println(result);
+
+                user.setPassword(newPassword);
+                return userService.updateUserById(user);
+            }catch (Exception e) {
+                e.printStackTrace();
+                return CommonResponse.createForError("验证码发送失败！");
+            }
+        }
+    }
+
+    @PostMapping("/passwordMSGMAIL")
+    @ResponseBody
+    public CommonResponse passwordMSGMAIL(HttpServletRequest request, String email, String id, Model model){
+        String apiUrl = "https://sms_developer.zhenzikj.com";
+        String appId  = "111103";
+        String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
+        String newPassword = null;
+
+        User user = userService.findUserById(id);
+
+        if(user == null){
+            return CommonResponse.createForError("用户名不存在！");
+        } else if (!user.getEmail().equals(email)) {
+            return CommonResponse.createForError("用户名与邮箱不匹配！");
+        }else {
+
+            try {
+
+                newPassword = RandomNumberUtil.getRandomNumber();
+                newPassword += RandomNumberUtil.getRandomNumber();
+
+                JavaMailUtil.receiveMailAccount = email;
+
+                Properties pops = new Properties();
+                pops.setProperty("mail.debug","true");
+                pops.setProperty("mail.smtp.auth","true");
+                pops.setProperty("mail.host",JavaMailUtil.emailSMTPHost);
+                pops.setProperty("mail.transport.protocol","smtp");
+                Session session = Session.getInstance(pops);
+                session.setDebug(true);
+                String html = htmlTextResetPSW.htmlTextResetPSW(newPassword);
+                MimeMessage message = JavaMailUtil.creatMimeMessage(session, JavaMailUtil.emailAccount,
+                        JavaMailUtil.receiveMailAccount,html);
+                Transport transport = session.getTransport();
+                transport.connect(JavaMailUtil.emailAccount,JavaMailUtil.emailPassword);
+                transport.sendMessage(message,message.getAllRecipients());
+                transport.close();
+
+                user.setPassword(newPassword);
+                return userService.updateUserById_2(user);
+
+
+            }catch (Exception e) {
+                e.printStackTrace();
+                return CommonResponse.createForError("验证码发送失败！");
+            }
+        }
+    }
+
+
 }

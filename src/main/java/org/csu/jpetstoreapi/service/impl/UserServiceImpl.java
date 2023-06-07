@@ -101,5 +101,25 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public CommonResponse<User> updateUserById(User user) {
+        if(user==null){
+            return CommonResponse.createForError("请先登录");
+        }
+        String MD5Password = MD5Util.inputPassToDBPass(user.getPassword(), salt);
+        user.setPassword(MD5Password);
+        userMapper.updateById(user);
+        return CommonResponse.createForSuccessMessage("新密码以发送至手机，请注意查收！");
+    }
 
+    @Override
+    public CommonResponse<User> updateUserById_2(User user) {
+        if(user==null){
+            return CommonResponse.createForError("请先登录");
+        }
+        String MD5Password = MD5Util.inputPassToDBPass(user.getPassword(), salt);
+        user.setPassword(MD5Password);
+        userMapper.updateById(user);
+        return CommonResponse.createForSuccessMessage("新密码以发送至邮箱，请注意查收！");
+    }
 }
