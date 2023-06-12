@@ -1,5 +1,6 @@
 package org.csu.jpetstoreapi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.VO.LineItemVO;
 import org.csu.jpetstoreapi.VO.OrderVO;
 import org.csu.jpetstoreapi.entity.LineItem;
@@ -13,10 +14,14 @@ import org.csu.jpetstoreapi.persistence.SequenceMapper;
 import org.csu.jpetstoreapi.service.CartService;
 import org.csu.jpetstoreapi.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.sql.Wrapper;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 @Service("orderService")
 public class OrderServiceImpl implements OrderService {
@@ -34,6 +39,25 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private LineItemMapper lineItemMapper;
+
+    //获取对应用户的所有订单
+    public List<OrderVO> getAllOrderVO(String userId){
+        System.out.println(userId);
+        QueryWrapper<Order> queryWrapper= new QueryWrapper<>();
+        queryWrapper.eq("userid", userId);
+        List<Order> orderList = orderMapper.selectList(queryWrapper);
+        List<OrderVO> orderVOList = new ArrayList<>();
+        ListIterator<Order> orderListIterator = orderList.listIterator();
+        while(orderListIterator.hasNext()){
+            Order order = orderListIterator.next();
+            System.out.println(order);
+            OrderStatus orderStatus =orderStatusMapper.selectById(order.getOrderId());
+            System.out.println(orderStatus);
+            OrderVO orderVO = orderToOrderVO(order, orderStatus);
+            orderVOList.add(orderVO);
+        }
+        return orderVOList;
+    }
 
     public OrderVO getOrderVO(String orderId){
 

@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+@CrossOrigin
 @Controller
 @RequestMapping("/review/")
 public class ReviewController {
