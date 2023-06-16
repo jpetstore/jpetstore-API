@@ -37,11 +37,11 @@ public class UserServiceImpl implements UserService {
         System.out.println("输入密码： "+password+"  MD5加密后： "+MD5Password);
         System.out.println("*******************************************");
         if(user==null){
-            return CommonResponse.createForSuccessMessage("没有该id的user");
+            return CommonResponse.createForError("没有该id的user");
         }
         else{
             if(!user.getPassword().equals(MD5Password)){
-                return CommonResponse.createForSuccessMessage("password不正确");
+                return CommonResponse.createForError("password不正确");
             }
             else{
                 return CommonResponse.createForSuccess("登录成功",user);
