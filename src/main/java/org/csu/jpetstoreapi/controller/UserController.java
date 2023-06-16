@@ -57,7 +57,7 @@ public class UserController {
     }
 
     //获得登入用户的用户信息
-    @PostMapping("get_loginUser_info")
+    @GetMapping("get_loginUser_info")
     @ResponseBody
     public CommonResponse<User> getLoginUserInfo(HttpSession session){
         User loginUser = (User) session.getAttribute("loginUser");
