@@ -3,14 +3,8 @@ package org.csu.jpetstoreapi.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.VO.LineItemVO;
 import org.csu.jpetstoreapi.VO.OrderVO;
-import org.csu.jpetstoreapi.entity.LineItem;
-import org.csu.jpetstoreapi.entity.Order;
-import org.csu.jpetstoreapi.entity.OrderStatus;
-import org.csu.jpetstoreapi.entity.Sequence;
-import org.csu.jpetstoreapi.persistence.LineItemMapper;
-import org.csu.jpetstoreapi.persistence.OrderMapper;
-import org.csu.jpetstoreapi.persistence.OrderStatusMapper;
-import org.csu.jpetstoreapi.persistence.SequenceMapper;
+import org.csu.jpetstoreapi.entity.*;
+import org.csu.jpetstoreapi.persistence.*;
 import org.csu.jpetstoreapi.service.CartService;
 import org.csu.jpetstoreapi.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +23,9 @@ public class OrderServiceImpl implements OrderService {
     private CartService cartService;
 
     @Autowired
+    private RefundOrdersMapper refundOrdersMapper;
+
+    @Autowired
     private OrderStatusMapper orderStatusMapper;
 
     @Autowired
@@ -39,6 +36,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private LineItemMapper lineItemMapper;
+
+    //退款申请
+    public void addRefundOrder(String orderId, String msg){
+        RefundOrders refundOrder = new RefundOrders();
+        refundOrder.setOrderid(orderId);
+        Order order = orderMapper.selectById(orderId);
+        refundOrder.setRefund_amount(order.getTotalPrice());
+        refundOrder.setRefund_reason(msg);
+        refundOrder.set_processed(false);
+        refundOrder.set_refused(false);
+        refundOrder.setRefuse_reason(null);
+        refundOrdersMapper.insert(refundOrder);
+    }
 
     //获取对应用户的所有订单
     public List<OrderVO> getAllOrderVO(String userId){

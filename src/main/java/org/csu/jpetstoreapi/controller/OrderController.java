@@ -34,6 +34,14 @@ public class OrderController {
     @Autowired
     private CartService cartService;
 
+    //退款申请
+    @GetMapping("refundOrder")
+    @ResponseBody
+    public CommonResponse refundOrder(String orderid, String msg){
+        orderService.addRefundOrder(orderid, msg);
+        return CommonResponse.createForSuccess("退款申请已提交");
+    }
+
     @GetMapping("getAllOrder")
     @ResponseBody
     public CommonResponse<List<OrderVO>>  getAllOrder(HttpSession session){
