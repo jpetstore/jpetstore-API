@@ -35,7 +35,7 @@ public class OrderController {
     private CartService cartService;
 
     //退款申请
-    @GetMapping("refundOrder")
+    @RequestMapping("refundOrder")
     @ResponseBody
     public CommonResponse refundOrder(String orderid, String msg){
         orderService.addRefundOrder(orderid, msg);
