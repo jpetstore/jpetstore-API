@@ -7,6 +7,8 @@ import com.zhenzi.sms.ZhenziSmsClient;
 import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.Sms;
 import org.csu.jpetstoreapi.entity.User;
+import org.csu.jpetstoreapi.entity.UserInfo;
+import org.csu.jpetstoreapi.service.UserInfoService;
 import org.csu.jpetstoreapi.service.UserService;
 import org.csu.jpetstoreapi.util.*;
 import org.csu.jpetstoreapi.util.AuthCodeUtil;
@@ -42,14 +44,18 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private UserInfoService userInfoService;
 
     //用户登录
     @PostMapping("login")
     @ResponseBody
-    public CommonResponse<User>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
+
+
+    public CommonResponse<UserInfo>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
                                      @RequestParam("password") @NotBlank(message = "密码不能为空") String password,
                                      HttpSession session){
-        CommonResponse<User>result=userService.getAccountByUsernameAndPassword(id,password);
+        CommonResponse<UserInfo>result=userInfoService.getAccountByUsernameAndPassword(id,password);
         if(result.isSuccess()){
             session.setAttribute("loginUser",result.getData());
         }
@@ -59,8 +65,9 @@ public class UserController {
     //获得登入用户的用户信息
     @GetMapping("get_loginUser_info")
     @ResponseBody
-    public CommonResponse<User> getLoginUserInfo(HttpSession session){
-        User loginUser = (User) session.getAttribute("loginUser");
+
+    public CommonResponse<UserInfo> getLoginUserInfo(HttpSession session){
+        UserInfo loginUser = (UserInfo) session.getAttribute("loginUser");
         if(loginUser !=null){
             return CommonResponse.createForSuccess("获取登录用户信息成功",loginUser);
         }
@@ -73,17 +80,18 @@ public class UserController {
     //判断用户是否存在
     @GetMapping("idIsExist")
     @ResponseBody
+
     public void idIsExist(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        User user = userService.findUserById(id);
+        UserInfo userInfo = userInfoService.findUserById(id);
 //        System.out.println("id= "+id);
-        System.out.println(user);
+        System.out.println(userInfo);
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
         if(id==""||id==null){
             out.print("Empty");
         }
-        else if(user != null){
+        else if(userInfo != null){
             out.print("Exist");
         }
         else {
@@ -96,7 +104,8 @@ public class UserController {
     //退出登录
     @GetMapping("signout")
     @ResponseBody
-    public CommonResponse<User> signout(HttpServletRequest request, HttpServletResponse response)throws IOException {
+
+    public CommonResponse<UserInfo> signout(HttpServletRequest request, HttpServletResponse response)throws IOException {
         if(request.getSession().getAttribute("loginUser") != null) {
             request.getSession().removeAttribute("loginUser");
 //            System.out.println("成功登出");
@@ -110,7 +119,8 @@ public class UserController {
     //用户注册
     @PostMapping("register")
     @ResponseBody
-    public CommonResponse<User> register(HttpServletRequest request,User user){
+
+    public CommonResponse<UserInfo> register(HttpServletRequest request,UserInfo userInfo){
 
         String id=request.getParameter("id");
         String password=request.getParameter("password");
@@ -125,32 +135,40 @@ public class UserController {
         String zip=request.getParameter("zip");
         String country=request.getParameter("country");
         String status=request.getParameter("status");
-//        String languagepre=request.getParameter("languagepre");
-        user.setId(id);
-        user.setPassword(password);
-        user.setFirstname(firstname);
-        user.setLastname(lastname);
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setAddr1(addr1);
-        user.setAddr2(addr2);
-        user.setCity(city);
-        user.setState(state);
-        user.setZip(zip);
-        user.setCountry(country);
-        user.setStatus(status);
-//        user.setLanguagepre(languagepre);
-        CommonResponse<User> response=userService.insertUser(user);
+        String languagepre=request.getParameter("languagepre");
+        String favoritecata = request.getParameter("favoritecata");
+        String iflist = request.getParameter("iflist");
+        String ifbanner = request.getParameter("ifbanner");
+
+        userInfo.setId(id);
+        userInfo.setPassword(password);
+        userInfo.setFirstname(firstname);
+        userInfo.setLastname(lastname);
+        userInfo.setEmail(email);
+        userInfo.setPhone(phone);
+        userInfo.setAddress1(addr1);
+        userInfo.setAddress2(addr2);
+        userInfo.setCity(city);
+        userInfo.setState(state);
+        userInfo.setZip(zip);
+        userInfo.setCountry(country);
+        userInfo.setStatus(status);
+        userInfo.setLanguagepre(languagepre);
+        userInfo.setFavoritecata(favoritecata);
+        userInfo.setIflist(iflist);
+        userInfo.setIfbanner(ifbanner);
+        CommonResponse<UserInfo> response=userInfoService.insertUser(userInfo);
         return response;
     }
 
     //编辑信息
     @PostMapping("editAccount")
     @ResponseBody
-    public CommonResponse<User> saveAccount(HttpServletRequest request,HttpSession session){
 
-        User user = (User) session.getAttribute("loginUser");//当前登录的用户信息
-        if(user==null){
+    public CommonResponse<UserInfo> saveAccount(HttpServletRequest request,HttpSession session){
+
+        UserInfo userInfo = (UserInfo) session.getAttribute("loginUser");//当前登录的用户信息
+        if(userInfo==null){
             return CommonResponse.createForError("请先登录");
         }
 
@@ -167,22 +185,30 @@ public class UserController {
         String zip=request.getParameter("zip");
         String country=request.getParameter("country");
         String status=request.getParameter("status");
-//        String languagepre=request.getParameter("languagepre");
-//        user.setId(id);
-        user.setPassword(password);
-        user.setFirstname(firstname);
-        user.setLastname(lastname);
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setAddr1(addr1);
-        user.setAddr2(addr2);
-        user.setCity(city);
-        user.setState(state);
-        user.setZip(zip);
-        user.setCountry(country);
-        user.setStatus(status);
+        String languagepre=request.getParameter("languagepre");
+        String favoritecata = request.getParameter("favoritecata");
+        String iflist = request.getParameter("iflist");
+        String ifbanner = request.getParameter("ifbanner");
 
-        CommonResponse<User> response=userService.updateUser(user);
+//        user.setId(id);
+        userInfo.setPassword(password);
+        userInfo.setFirstname(firstname);
+        userInfo.setLastname(lastname);
+        userInfo.setEmail(email);
+        userInfo.setPhone(phone);
+        userInfo.setAddress1(addr1);
+        userInfo.setAddress2(addr2);
+        userInfo.setCity(city);
+        userInfo.setState(state);
+        userInfo.setZip(zip);
+        userInfo.setCountry(country);
+        userInfo.setStatus(status);
+        userInfo.setLanguagepre(languagepre);
+        userInfo.setFavoritecata(favoritecata);
+        userInfo.setIflist(iflist);
+        userInfo.setIfbanner(ifbanner);
+
+        CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
         return response;
     }
 
@@ -216,7 +242,8 @@ public class UserController {
     //获取图片验证码
     @GetMapping("getAuthCode")
     @ResponseBody
-    public CommonResponse<User> getAuthCode(HttpSession session){
+
+    public CommonResponse<UserInfo> getAuthCode(HttpSession session){
         String authCode = (String)session.getAttribute("authCode");
 //        System.out.println(authCode);
         if (authCode==null)return CommonResponse.createForError("验证码未创建");
@@ -313,28 +340,29 @@ public class UserController {
     //手机号登陆
     @PostMapping("signinPhone")
     @ResponseBody
+
     public CommonResponse signinPhone(HttpSession session,String phone,String vCode){
         String phoneVCode = (String)session.getAttribute("vCode");
 
         if(phoneVCode==null)return CommonResponse.createForError("验证码未创建");
         else {
-            User user = userService.findUserByPhone(phone);
-            if (user == null) {
+            UserInfo userInfo = userInfoService.findUserByPhone(phone);
+            if (userInfo == null) {
                 return CommonResponse.createForError("查无此人");
             } else if (!vCode.equals(phoneVCode)) {
                 return CommonResponse.createForError("手机验证码有误，请重新输入！");
             } else {
-                session.setAttribute("loginUser", user);
+                session.setAttribute("loginUser", userInfo);
                 session.removeAttribute("vCode");
-                return CommonResponse.createForSuccess("登录成功",user);
+                return CommonResponse.createForSuccess("登录成功",userInfo);
             }
-
         }
     }
 
     //忘记密码发送新密码到手机号
     @PostMapping("/passwordMSG")
     @ResponseBody
+
     public CommonResponse passwordMSG(HttpServletRequest request, String phoneNumber, String id, Model model){
 
         String apiUrl = "https://sms_developer.zhenzikj.com";
@@ -343,12 +371,12 @@ public class UserController {
         String newPassword = "";
 
 //        System.out.println(id);
-        User user = userService.findUserById(id);
-        System.out.println(user);
+        UserInfo userInfo = userInfoService.findUserById(id);
+        System.out.println(userInfo);
 
-        if(user == null){
+        if(userInfo == null){
             return CommonResponse.createForError("用户名不存在！");
-        } else if (!user.getPhone().equals(phoneNumber)) {
+        } else if (!userInfo.getPhone().equals(phoneNumber)) {
             return CommonResponse.createForError("用户名与手机号不匹配！");
         }else {
             try{
@@ -365,8 +393,8 @@ public class UserController {
 
                 System.out.println(result);
 
-                user.setPassword(newPassword);
-                return userService.updateUserById(user);
+                userInfo.setPassword(newPassword);
+                return userInfoService.updateUserById(userInfo);
             }catch (Exception e) {
                 e.printStackTrace();
                 return CommonResponse.createForError("验证码发送失败！");
@@ -376,17 +404,18 @@ public class UserController {
 
     @PostMapping("/passwordMSGMAIL")
     @ResponseBody
+
     public CommonResponse passwordMSGMAIL(HttpServletRequest request, String email, String id, Model model){
         String apiUrl = "https://sms_developer.zhenzikj.com";
         String appId  = "111103";
         String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
         String newPassword = null;
 
-        User user = userService.findUserById(id);
+        UserInfo userInfo = userInfoService.findUserById(id);
 
-        if(user == null){
+        if(userInfo == null){
             return CommonResponse.createForError("用户名不存在！");
-        } else if (!user.getEmail().equals(email)) {
+        } else if (!userInfo.getEmail().equals(email)) {
             return CommonResponse.createForError("用户名与邮箱不匹配！");
         }else {
 
@@ -412,8 +441,8 @@ public class UserController {
                 transport.sendMessage(message,message.getAllRecipients());
                 transport.close();
 
-                user.setPassword(newPassword);
-                return userService.updateUserById_2(user);
+                userInfo.setPassword(newPassword);
+                return userInfoService.updateUserById_2(userInfo);
 
 
             }catch (Exception e) {
@@ -422,6 +451,4 @@ public class UserController {
             }
         }
     }
-
-
 }
