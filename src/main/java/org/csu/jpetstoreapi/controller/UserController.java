@@ -117,11 +117,52 @@ public class UserController {
     }
 
     //用户注册
+//    @PostMapping("register")
+//    @ResponseBody
+//
+//    public CommonResponse<UserInfo> register(HttpServletRequest request,UserInfo userInfo){
+//
+//        String id=request.getParameter("id");
+//        String password=request.getParameter("password");
+//        String firstname=request.getParameter("firstname");
+//        String lastname=request.getParameter("lastname");
+//        String email=request.getParameter("email");
+//        String phone=request.getParameter("phone");
+//        String addr1=request.getParameter("addr1");
+//        String addr2=request.getParameter("addr2");
+//        String city=request.getParameter("city");
+//        String state=request.getParameter("state");
+//        String zip=request.getParameter("zip");
+//        String country=request.getParameter("country");
+//        String status=request.getParameter("status");
+//        String languagepre=request.getParameter("languagepre");
+//        String favoritecata = request.getParameter("favoritecata");
+//        String iflist = request.getParameter("iflist");
+//        String ifbanner = request.getParameter("ifbanner");
+//
+//        userInfo.setId(id);
+//        userInfo.setPassword(password);
+//        userInfo.setFirstname(firstname);
+//        userInfo.setLastname(lastname);
+//        userInfo.setEmail(email);
+//        userInfo.setPhone(phone);
+//        userInfo.setAddress1(addr1);
+//        userInfo.setAddress2(addr2);
+//        userInfo.setCity(city);
+//        userInfo.setState(state);
+//        userInfo.setZip(zip);
+//        userInfo.setCountry(country);
+//        userInfo.setStatus(status);
+//        userInfo.setLanguagepre(languagepre);
+//        userInfo.setFavoritecata(favoritecata);
+//        userInfo.setIflist(iflist);
+//        userInfo.setIfbanner(ifbanner);
+//        CommonResponse<UserInfo> response=userInfoService.insertUser(userInfo);
+//        return response;
+//    }
     @PostMapping("register")
     @ResponseBody
-
-    public CommonResponse<UserInfo> register(HttpServletRequest request,UserInfo userInfo){
-
+    public CommonResponse<UserInfo> register(HttpServletRequest request){
         String id=request.getParameter("id");
         String password=request.getParameter("password");
         String firstname=request.getParameter("firstname");
@@ -140,6 +181,7 @@ public class UserController {
         String iflist = request.getParameter("iflist");
         String ifbanner = request.getParameter("ifbanner");
 
+        UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setPassword(password);
         userInfo.setFirstname(firstname);
