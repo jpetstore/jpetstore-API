@@ -47,8 +47,6 @@ public class UserController {
     //用户登录
     @PostMapping("login")
     @ResponseBody
-
-
     public CommonResponse<User>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
                                          @RequestParam("password") @NotBlank(message = "密码不能为空") String password,
                                          HttpSession session){
@@ -233,8 +231,6 @@ public class UserController {
         System.out.println("*******************************************");
         System.out.println("当前验证码："+authCode);
         System.out.println("*******************************************");
-
-
         session.removeAttribute(authCode);
         session.setAttribute("authCode",authCode);
         response.setContentType("image/jpeg");
@@ -456,6 +452,18 @@ public class UserController {
                 e.printStackTrace();
                 return CommonResponse.createForError("验证码发送失败！");
             }
+        }
+    }
+
+    @GetMapping("getPhoneCode")
+    @ResponseBody
+    public CommonResponse getPhoneCode(HttpSession session){
+        String phoneVCode = (String)session.getAttribute("vCode");
+        if(phoneVCode == null){
+            return CommonResponse.createForError("验证码未创建");
+        }else {
+            session.removeAttribute("vCode");
+            return CommonResponse.createForSuccess(phoneVCode);
         }
     }
 }
