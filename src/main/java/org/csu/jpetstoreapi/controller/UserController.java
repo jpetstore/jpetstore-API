@@ -80,7 +80,6 @@ public class UserController {
     //判断用户是否存在
     @GetMapping("idIsExist")
     @ResponseBody
-
     public void idIsExist(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         UserInfo userInfo = userInfoService.findUserById(id);
@@ -199,6 +198,7 @@ public class UserController {
         userInfo.setFavoritecata(favoritecata);
         userInfo.setIflist(iflist);
         userInfo.setIfbanner(ifbanner);
+        System.out.println(userInfo);
         CommonResponse<UserInfo> response=userInfoService.insertUser(userInfo);
         return response;
     }
@@ -257,7 +257,7 @@ public class UserController {
     //图片验证码
     //todo:将值显示到前端
     @GetMapping("authCode")
-    public void authCode(HttpSession session, HttpServletResponse response,Integer number) throws IOException {
+    public void authCode(HttpSession session, HttpServletResponse response) throws IOException {
         AuthCodeUtil authCodeUtil=new AuthCodeUtil();
         BufferedImage image = new BufferedImage(authCodeUtil.WIDTH,authCodeUtil.HEIGHT,BufferedImage.TYPE_INT_RGB);
         Graphics g = image.getGraphics();
@@ -271,7 +271,7 @@ public class UserController {
         System.out.println("*******************************************");
 
 
-        session.removeAttribute(authCode);
+//        session.removeAttribute(authCode);
         session.setAttribute("authCode",authCode);
         response.setContentType("image/jpeg");
         response.setHeader("Pragma","no-cache");
@@ -284,20 +284,19 @@ public class UserController {
     //获取图片验证码
     @GetMapping("getAuthCode")
     @ResponseBody
-
     public CommonResponse<UserInfo> getAuthCode(HttpSession session){
         String authCode = (String)session.getAttribute("authCode");
 //        System.out.println(authCode);
         if (authCode==null)return CommonResponse.createForError("验证码未创建");
         else {
-            session.removeAttribute("authCode");
+//            session.removeAttribute("authCode");
             return CommonResponse.createForSuccessMessage(authCode);
         }
     }
 
 
     //生成并发送手机验证码（手机登录）
-    @PostMapping("phoneVCode")
+    @RequestMapping("phoneVCode")
     @ResponseBody
     public CommonResponse phoneCode(HttpServletRequest request,String phone){
 
@@ -343,7 +342,6 @@ public class UserController {
         String vCode = RandomNumberUtil.getRandomNumber();
         System.out.println("验证码= "+vCode);
 
-
         //腾讯云验证码
         int appid=1400818073;
         String appkey="260f7273e0a3e08f590f54565ce60259";
@@ -377,7 +375,6 @@ public class UserController {
             return CommonResponse.createForError("短信发送失败");
         }
     }
-
 
     //手机号登陆
     @PostMapping("signinPhone")
