@@ -92,6 +92,22 @@ public class UserInfoServiceImpl implements UserInfoService {
             return CommonResponse.createForSuccess("更改信息成功",userInfo);
         }
     }
+    @Override
+    public CommonResponse<UserInfo> updateUserExceptPwd(UserInfo userInfo) {
+        if(userInfo==null){
+            return CommonResponse.createForError("请先登录");
+        }
+        if (userInfo.getPassword() == null||userInfo.getPassword()=="") {
+            return CommonResponse.createForError("密码不能为空");
+        } else if (userInfo.getPhone() == null||userInfo.getPhone()=="") {
+            return CommonResponse.createForError("电话不能为空");
+        } else {
+//            String MD5Password = MD5Util.inputPassToDBPass(userInfo.getPassword(), salt);
+//            userInfo.setPassword(MD5Password);
+            userInfoMapper.updateById(userInfo);
+            return CommonResponse.createForSuccess("更改信息成功",userInfo);
+        }
+    }
 
     @Override
     public UserInfo findUserByPhone(String phone) {

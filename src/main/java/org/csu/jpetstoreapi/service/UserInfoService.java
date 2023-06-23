@@ -18,4 +18,5 @@ public interface UserInfoService {
     CommonResponse<UserInfo> updateUserById(UserInfo userInfo);
 
     CommonResponse<UserInfo> updateUserById_2(UserInfo userInfo);
+    CommonResponse<UserInfo> updateUserExceptPwd(UserInfo userInfo);
 }

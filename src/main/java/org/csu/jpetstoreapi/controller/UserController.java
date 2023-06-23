@@ -170,6 +170,7 @@ public class UserController {
     public CommonResponse<UserInfo> saveAccount(HttpServletRequest request,HttpSession session){
 
         UserInfo userInfo = (UserInfo) session.getAttribute("loginUser");//当前登录的用户信息
+        String originalPwd = userInfo.getPassword();
         if(userInfo==null){
             return CommonResponse.createForError("请先登录");
         }
@@ -189,11 +190,19 @@ public class UserController {
         String languagepre=request.getParameter("languagepre");
 
 
-        System.out.println(password);
+        System.out.println("密码是："+password);
+        System.out.println("密码长度是："+password.length());
 //        user.setId(id);
-        if(password.length()<=12) {
-            userInfo.setPassword(password);
-            System.out.println("aaaaa");
+        if(password.length()<32) {
+            //修改密码
+            String salt = "1a2b3c4d";
+            String MD5Password = MD5Util.inputPassToDBPass(password, salt);
+            userInfo.setPassword(MD5Password);
+            System.out.println("MD5Password = " + MD5Password);
+        }else {
+            //不修改密码
+            userInfo.setPassword(originalPwd);
+            System.out.println("originalPwd = " + originalPwd);
         }
         userInfo.setFirstname(firstname);
         userInfo.setLastname(lastname);
@@ -208,7 +217,7 @@ public class UserController {
         userInfo.setLanguagepre(languagepre);
         System.out.println(userInfo);
 
-        CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
+        CommonResponse<UserInfo> response=userInfoService.updateUserExceptPwd(userInfo);
         return response;
     }
 
