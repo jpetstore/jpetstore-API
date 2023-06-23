@@ -57,6 +57,7 @@ public class UserController {
                                      HttpSession session){
         CommonResponse<UserInfo>result=userInfoService.getAccountByUsernameAndPassword(id,password);
         if(result.isSuccess()){
+//            System.out.println("登录成功------------");
             session.setAttribute("loginUser",result.getData());
         }
         return result;
@@ -115,6 +116,16 @@ public class UserController {
             return CommonResponse.createForError("未登录");
         }
     }
+//    public CommonResponse<UserInfo> signout(HttpSession session)throws IOException {
+//        if(session.getAttribute("loginUser") != null) {
+//            session.removeAttribute("loginUser");
+////            System.out.println("成功登出");
+//            return CommonResponse.createForSuccessMessage("成功退出登录");
+//        }else{
+////            System.out.println("用户不存在，无法登出");
+//            return CommonResponse.createForError("未登录");
+//        }
+//    }
 
     //用户注册
 //    @PostMapping("register")
@@ -375,6 +386,18 @@ public class UserController {
         }catch (IOException e){
             e.printStackTrace();
             return CommonResponse.createForError("短信发送失败");
+        }
+    }
+
+    @GetMapping("getPhoneCode")
+    @ResponseBody
+    public CommonResponse getPhoneCode(HttpSession session) {
+        String phoneVCode = (String)session.getAttribute("vCode");
+        if(phoneVCode==null){
+            return CommonResponse.createForError("验证码未创建");
+        }else {
+            session.removeAttribute("vCode");
+            return CommonResponse.createForSuccess(phoneVCode);
         }
     }
 
