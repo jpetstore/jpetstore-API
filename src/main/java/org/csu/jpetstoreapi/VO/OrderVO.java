@@ -66,7 +66,7 @@ public class OrderVO {
 
 
     //根据当前用户和购物车生成订单
-    public void initOrder(UserInfo account, List<CartItemVO> cart) {
+    public void initOrder(User account, List<CartItemVO> cart) {
 
         userId = account.getId();
         orderDate = new Date(System.currentTimeMillis());

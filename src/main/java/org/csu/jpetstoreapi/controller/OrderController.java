@@ -4,7 +4,6 @@ import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.User;
-import org.csu.jpetstoreapi.entity.UserInfo;
 import org.csu.jpetstoreapi.service.CartService;
 import org.csu.jpetstoreapi.service.OrderService;
 import org.csu.jpetstoreapi.service.PayService;
@@ -47,7 +46,7 @@ public class OrderController {
     @GetMapping("getAllOrder")
     @ResponseBody
     public CommonResponse<List<OrderVO>>  getAllOrder(HttpSession session){
-        UserInfo account = (UserInfo)session.getAttribute("loginUser");
+        User account = (User)session.getAttribute("loginUser");
         if(account==null){
             return CommonResponse.createForError("请先登录");
         }
@@ -60,7 +59,7 @@ public class OrderController {
     @ResponseBody
     public CommonResponse<OrderVO>  getOrder(HttpSession session){
         List<CartItemVO> cart = (List<CartItemVO>) session.getAttribute("cart");
-        UserInfo account = (UserInfo)session.getAttribute("loginUser");
+        User account = (User)session.getAttribute("loginUser");
 
         OrderVO ordervo = new OrderVO();
         ordervo.initOrder(account,cart);
@@ -92,7 +91,7 @@ public class OrderController {
             String cardType = request.getParameter("cardType");
             String creditCard = request.getParameter("creditCard");
             String expiryDate = request.getParameter("expiryDate");
-            UserInfo account = (UserInfo)session.getAttribute("loginUser");
+            User account = (User)session.getAttribute("loginUser");
 
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");

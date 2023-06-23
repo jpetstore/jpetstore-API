@@ -7,8 +7,6 @@ import com.zhenzi.sms.ZhenziSmsClient;
 import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.Sms;
 import org.csu.jpetstoreapi.entity.User;
-import org.csu.jpetstoreapi.entity.UserInfo;
-import org.csu.jpetstoreapi.service.UserInfoService;
 import org.csu.jpetstoreapi.service.UserService;
 import org.csu.jpetstoreapi.util.*;
 import org.csu.jpetstoreapi.util.AuthCodeUtil;
@@ -44,18 +42,17 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-    @Autowired
-    private UserInfoService userInfoService;
+
 
     //用户登录
     @PostMapping("login")
     @ResponseBody
 
 
-    public CommonResponse<UserInfo>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
+    public CommonResponse<User>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
                                          @RequestParam("password") @NotBlank(message = "密码不能为空") String password,
                                          HttpSession session){
-        CommonResponse<UserInfo>result=userInfoService.getAccountByUsernameAndPassword(id,password);
+        CommonResponse<User>result=userService.getAccountByUsernameAndPassword(id,password);
         if(result.isSuccess()){
             session.setAttribute("loginUser",result.getData());
 
@@ -67,8 +64,8 @@ public class UserController {
     @GetMapping("get_loginUser_info")
     @ResponseBody
 
-    public CommonResponse<UserInfo> getLoginUserInfo(HttpSession session){
-        UserInfo loginUser = (UserInfo) session.getAttribute("loginUser");
+    public CommonResponse<User> getLoginUserInfo(HttpSession session){
+        User loginUser = (User) session.getAttribute("loginUser");
         System.out.println("loginUser"+loginUser);
         if(loginUser !=null){
             return CommonResponse.createForSuccess("获取登录用户信息成功",loginUser);
@@ -82,17 +79,18 @@ public class UserController {
     //判断用户是否存在
     @GetMapping("idIsExist")
     @ResponseBody
+
     public void idIsExist(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        UserInfo userInfo = userInfoService.findUserById(id);
+        User user = userService.findUserById(id);
 //        System.out.println("id= "+id);
-        System.out.println(userInfo);
+        System.out.println(user);
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
         if(id==""||id==null){
             out.print("Empty");
         }
-        else if(userInfo != null){
+        else if(user != null){
             out.print("Exist");
         }
         else {
@@ -106,7 +104,7 @@ public class UserController {
     @GetMapping("signout")
     @ResponseBody
 
-    public CommonResponse<UserInfo> signout(HttpServletRequest request, HttpServletResponse response)throws IOException {
+    public CommonResponse<User> signout(HttpServletRequest request, HttpServletResponse response)throws IOException {
         if(request.getSession().getAttribute("loginUser") != null) {
             request.getSession().removeAttribute("loginUser");
 //            System.out.println("成功登出");
@@ -120,7 +118,7 @@ public class UserController {
     //用户注册
     @PostMapping("register")
     @ResponseBody
-    public CommonResponse<UserInfo> register(HttpServletRequest request){
+    public CommonResponse<User> register(HttpServletRequest request){
 
         String id=request.getParameter("id");
         String password=request.getParameter("password");
@@ -140,7 +138,7 @@ public class UserController {
         String iflist = request.getParameter("iflist");
         String ifbanner = request.getParameter("ifbanner");
 
-        UserInfo userInfo = new UserInfo();
+        User userInfo = new User();
         userInfo.setId(id);
         userInfo.setPassword(password);
         userInfo.setFirstname(firstname);
@@ -158,8 +156,7 @@ public class UserController {
         userInfo.setFavoritecata(favoritecata);
         userInfo.setIflist(iflist);
         userInfo.setIfbanner(ifbanner);
-        System.out.println(userInfo);
-        CommonResponse<UserInfo> response=userInfoService.insertUser(userInfo);
+        CommonResponse<User> response=userService.insertUser(userInfo);
         return response;
     }
 
@@ -167,9 +164,10 @@ public class UserController {
     @PostMapping("editAccount")
     @ResponseBody
 
-    public CommonResponse<UserInfo> saveAccount(HttpServletRequest request,HttpSession session){
+    public CommonResponse<User> saveAccount(HttpServletRequest request,HttpSession session){
 
-        UserInfo userInfo = (UserInfo) session.getAttribute("loginUser");//当前登录的用户信息
+        User userInfo = (User) session.getAttribute("loginUser");//当前登录的用户信息
+        String originalPwd = userInfo.getPassword();
         if(userInfo==null){
             return CommonResponse.createForError("请先登录");
         }
@@ -189,11 +187,19 @@ public class UserController {
         String languagepre=request.getParameter("languagepre");
 
 
-        System.out.println(password);
+//        System.out.println("密码是："+password);
+//        System.out.println("密码长度是："+password.length());
 //        user.setId(id);
-        if(password.length()<=12) {
-            userInfo.setPassword(password);
-            System.out.println("aaaaa");
+        if(password.length()<32) {
+            //修改密码
+            String salt = "1a2b3c4d";
+            String MD5Password = MD5Util.inputPassToDBPass(password, salt);
+            userInfo.setPassword(MD5Password);
+            System.out.println("MD5Password = " + MD5Password);
+        }else {
+            //不修改密码
+            userInfo.setPassword(originalPwd);
+            System.out.println("originalPwd = " + originalPwd);
         }
         userInfo.setFirstname(firstname);
         userInfo.setLastname(lastname);
@@ -208,14 +214,14 @@ public class UserController {
         userInfo.setLanguagepre(languagepre);
         System.out.println(userInfo);
 
-        CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
+        CommonResponse<User> response=userService.updateUserExceptPwd(userInfo);
         return response;
     }
 
     //图片验证码
     //todo:将值显示到前端
     @GetMapping("authCode")
-    public void authCode(HttpSession session, HttpServletResponse response) throws IOException {
+    public void authCode(HttpSession session, HttpServletResponse response,Integer number) throws IOException {
         AuthCodeUtil authCodeUtil=new AuthCodeUtil();
         BufferedImage image = new BufferedImage(authCodeUtil.WIDTH,authCodeUtil.HEIGHT,BufferedImage.TYPE_INT_RGB);
         Graphics g = image.getGraphics();
@@ -229,7 +235,7 @@ public class UserController {
         System.out.println("*******************************************");
 
 
-//        session.removeAttribute(authCode);
+        session.removeAttribute(authCode);
         session.setAttribute("authCode",authCode);
         response.setContentType("image/jpeg");
         response.setHeader("Pragma","no-cache");
@@ -242,19 +248,20 @@ public class UserController {
     //获取图片验证码
     @GetMapping("getAuthCode")
     @ResponseBody
-    public CommonResponse<UserInfo> getAuthCode(HttpSession session){
+
+    public CommonResponse<User> getAuthCode(HttpSession session){
         String authCode = (String)session.getAttribute("authCode");
 //        System.out.println(authCode);
         if (authCode==null)return CommonResponse.createForError("验证码未创建");
         else {
-//            session.removeAttribute("authCode");
+            session.removeAttribute("authCode");
             return CommonResponse.createForSuccessMessage(authCode);
         }
     }
 
 
     //生成并发送手机验证码（手机登录）
-    @RequestMapping("phoneVCode")
+    @PostMapping("phoneVCode")
     @ResponseBody
     public CommonResponse phoneCode(HttpServletRequest request,String phone){
 
@@ -300,6 +307,7 @@ public class UserController {
         String vCode = RandomNumberUtil.getRandomNumber();
         System.out.println("验证码= "+vCode);
 
+
         //腾讯云验证码
         int appid=1400818073;
         String appkey="260f7273e0a3e08f590f54565ce60259";
@@ -334,6 +342,7 @@ public class UserController {
         }
     }
 
+
     //手机号登陆
     @PostMapping("signinPhone")
     @ResponseBody
@@ -343,7 +352,7 @@ public class UserController {
 
         if(phoneVCode==null)return CommonResponse.createForError("验证码未创建");
         else {
-            UserInfo userInfo = userInfoService.findUserByPhone(phone);
+            User userInfo = userService.findUserByPhone(phone);
             if (userInfo == null) {
                 return CommonResponse.createForError("查无此人");
             } else if (!vCode.equals(phoneVCode)) {
@@ -369,7 +378,7 @@ public class UserController {
         String newPassword = "";
         System.out.println("发来手机重置密码");
 //        System.out.println(id);
-        UserInfo userInfo = userInfoService.findUserById(username);
+        User userInfo = userService.findUserById(username);
         System.out.println(userInfo);
 
         if(userInfo == null){
@@ -392,7 +401,7 @@ public class UserController {
                 System.out.println(result);
 
                 userInfo.setPassword(newPassword);
-                return userInfoService.updateUserById(userInfo);
+                return userService.updateUserById(userInfo);
             }catch (Exception e) {
                 e.printStackTrace();
                 return CommonResponse.createForError("验证码发送失败！");
@@ -409,7 +418,7 @@ public class UserController {
         String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
         String newPassword = null;
         System.out.println("发来邮箱重置密码");
-        UserInfo userInfo = userInfoService.findUserById(id);
+        User userInfo = userService.findUserById(id);
 
         if(userInfo == null){
             return CommonResponse.createForError("用户名不存在！");
@@ -440,7 +449,7 @@ public class UserController {
                 transport.close();
 
                 userInfo.setPassword(newPassword);
-                return userInfoService.updateUserById_2(userInfo);
+                return userService.updateUserById_2(userInfo);
 
 
             }catch (Exception e) {
