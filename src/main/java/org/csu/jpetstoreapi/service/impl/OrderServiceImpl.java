@@ -39,9 +39,14 @@ public class OrderServiceImpl implements OrderService {
 
     //退款申请
     public void addRefundOrder(String orderId, String msg){
+        //P完成付款 Q待处理 Y已退款 S拒绝退款
         RefundOrders refundOrder = new RefundOrders();
         refundOrder.setOrderid(orderId);
         Order order = orderMapper.selectById(orderId);
+        OrderStatus orderStatus =orderStatusMapper.selectById(order.getOrderId());
+        System.out.println(orderStatus);
+        orderStatus.setStatus("Q");
+        orderStatusMapper.updateById(orderStatus);
         refundOrder.setRefund_amount(order.getTotalPrice());
         refundOrder.setRefund_reason(msg);
         refundOrder.set_processed(false);

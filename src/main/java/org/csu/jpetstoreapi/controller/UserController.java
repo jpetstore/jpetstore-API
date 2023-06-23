@@ -53,11 +53,12 @@ public class UserController {
 
 
     public CommonResponse<UserInfo>login(@RequestParam("id") @NotBlank(message = "用户名不能为空") String id,
-                                     @RequestParam("password") @NotBlank(message = "密码不能为空") String password,
-                                     HttpSession session){
+                                         @RequestParam("password") @NotBlank(message = "密码不能为空") String password,
+                                         HttpSession session){
         CommonResponse<UserInfo>result=userInfoService.getAccountByUsernameAndPassword(id,password);
         if(result.isSuccess()){
             session.setAttribute("loginUser",result.getData());
+
         }
         return result;
     }
@@ -68,6 +69,7 @@ public class UserController {
 
     public CommonResponse<UserInfo> getLoginUserInfo(HttpSession session){
         UserInfo loginUser = (UserInfo) session.getAttribute("loginUser");
+        System.out.println("loginUser"+loginUser);
         if(loginUser !=null){
             return CommonResponse.createForSuccess("获取登录用户信息成功",loginUser);
         }
@@ -116,52 +118,10 @@ public class UserController {
     }
 
     //用户注册
-//    @PostMapping("register")
-//    @ResponseBody
-//
-//    public CommonResponse<UserInfo> register(HttpServletRequest request,UserInfo userInfo){
-//
-//        String id=request.getParameter("id");
-//        String password=request.getParameter("password");
-//        String firstname=request.getParameter("firstname");
-//        String lastname=request.getParameter("lastname");
-//        String email=request.getParameter("email");
-//        String phone=request.getParameter("phone");
-//        String addr1=request.getParameter("addr1");
-//        String addr2=request.getParameter("addr2");
-//        String city=request.getParameter("city");
-//        String state=request.getParameter("state");
-//        String zip=request.getParameter("zip");
-//        String country=request.getParameter("country");
-//        String status=request.getParameter("status");
-//        String languagepre=request.getParameter("languagepre");
-//        String favoritecata = request.getParameter("favoritecata");
-//        String iflist = request.getParameter("iflist");
-//        String ifbanner = request.getParameter("ifbanner");
-//
-//        userInfo.setId(id);
-//        userInfo.setPassword(password);
-//        userInfo.setFirstname(firstname);
-//        userInfo.setLastname(lastname);
-//        userInfo.setEmail(email);
-//        userInfo.setPhone(phone);
-//        userInfo.setAddress1(addr1);
-//        userInfo.setAddress2(addr2);
-//        userInfo.setCity(city);
-//        userInfo.setState(state);
-//        userInfo.setZip(zip);
-//        userInfo.setCountry(country);
-//        userInfo.setStatus(status);
-//        userInfo.setLanguagepre(languagepre);
-//        userInfo.setFavoritecata(favoritecata);
-//        userInfo.setIflist(iflist);
-//        userInfo.setIfbanner(ifbanner);
-//        CommonResponse<UserInfo> response=userInfoService.insertUser(userInfo);
-//        return response;
-//    }
     @PostMapping("register")
     @ResponseBody
     public CommonResponse<UserInfo> register(HttpServletRequest request){
+
         String id=request.getParameter("id");
         String password=request.getParameter("password");
         String firstname=request.getParameter("firstname");
@@ -220,20 +180,21 @@ public class UserController {
         String lastname=request.getParameter("lastname");
         String email=request.getParameter("email");
         String phone=request.getParameter("phone");
-        String addr1=request.getParameter("addr1");
-        String addr2=request.getParameter("addr2");
+        String addr1=request.getParameter("address1");
+        String addr2=request.getParameter("address2");
         String city=request.getParameter("city");
         String state=request.getParameter("state");
         String zip=request.getParameter("zip");
         String country=request.getParameter("country");
-        String status=request.getParameter("status");
         String languagepre=request.getParameter("languagepre");
-        String favoritecata = request.getParameter("favoritecata");
-        String iflist = request.getParameter("iflist");
-        String ifbanner = request.getParameter("ifbanner");
 
+
+        System.out.println(password);
 //        user.setId(id);
-        userInfo.setPassword(password);
+        if(password.length()<=12) {
+            userInfo.setPassword(password);
+            System.out.println("aaaaa");
+        }
         userInfo.setFirstname(firstname);
         userInfo.setLastname(lastname);
         userInfo.setEmail(email);
@@ -244,11 +205,8 @@ public class UserController {
         userInfo.setState(state);
         userInfo.setZip(zip);
         userInfo.setCountry(country);
-        userInfo.setStatus(status);
         userInfo.setLanguagepre(languagepre);
-        userInfo.setFavoritecata(favoritecata);
-        userInfo.setIflist(iflist);
-        userInfo.setIfbanner(ifbanner);
+        System.out.println(userInfo);
 
         CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
         return response;
@@ -392,6 +350,7 @@ public class UserController {
                 return CommonResponse.createForError("手机验证码有误，请重新输入！");
             } else {
                 session.setAttribute("loginUser", userInfo);
+                // System.out.println("okkkk"+session.getAttribute("loginUser"));
                 session.removeAttribute("vCode");
                 return CommonResponse.createForSuccess("登录成功",userInfo);
             }
@@ -402,15 +361,15 @@ public class UserController {
     @PostMapping("/passwordMSG")
     @ResponseBody
 
-    public CommonResponse passwordMSG(HttpServletRequest request, String phoneNumber, String id, Model model){
+    public CommonResponse passwordMSG(HttpServletRequest request, String phoneNumber, String username, Model model){
 
         String apiUrl = "https://sms_developer.zhenzikj.com";
         String appId  = "111103";
         String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
         String newPassword = "";
-
+        System.out.println("发来手机重置密码");
 //        System.out.println(id);
-        UserInfo userInfo = userInfoService.findUserById(id);
+        UserInfo userInfo = userInfoService.findUserById(username);
         System.out.println(userInfo);
 
         if(userInfo == null){
@@ -449,7 +408,7 @@ public class UserController {
         String appId  = "111103";
         String appSecret = "761719c1-e3cc-41dc-9074-01744465caad";
         String newPassword = null;
-
+        System.out.println("发来邮箱重置密码");
         UserInfo userInfo = userInfoService.findUserById(id);
 
         if(userInfo == null){

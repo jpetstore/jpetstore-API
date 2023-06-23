@@ -4,6 +4,7 @@ import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.User;
+import org.csu.jpetstoreapi.entity.UserInfo;
 import org.csu.jpetstoreapi.service.CartService;
 import org.csu.jpetstoreapi.service.OrderService;
 import org.csu.jpetstoreapi.service.PayService;
@@ -38,6 +39,7 @@ public class OrderController {
     @RequestMapping("refundOrder")
     @ResponseBody
     public CommonResponse refundOrder(String orderid, String msg){
+        System.out.println(orderid+"11111111111111"+msg);
         orderService.addRefundOrder(orderid, msg);
         return CommonResponse.createForSuccess("退款申请已提交");
     }
@@ -45,7 +47,10 @@ public class OrderController {
     @GetMapping("getAllOrder")
     @ResponseBody
     public CommonResponse<List<OrderVO>>  getAllOrder(HttpSession session){
-        User account = (User)session.getAttribute("loginUser");
+        UserInfo account = (UserInfo)session.getAttribute("loginUser");
+        if(account==null){
+            return CommonResponse.createForError("请先登录");
+        }
         List<OrderVO> orderVOList = orderService.getAllOrderVO(account.getId());
         return CommonResponse.createForSuccess(orderVOList);
     }
@@ -55,7 +60,7 @@ public class OrderController {
     @ResponseBody
     public CommonResponse<OrderVO>  getOrder(HttpSession session){
         List<CartItemVO> cart = (List<CartItemVO>) session.getAttribute("cart");
-        User account = (User)session.getAttribute("loginUser");
+        UserInfo account = (UserInfo)session.getAttribute("loginUser");
 
         OrderVO ordervo = new OrderVO();
         ordervo.initOrder(account,cart);
@@ -87,7 +92,7 @@ public class OrderController {
             String cardType = request.getParameter("cardType");
             String creditCard = request.getParameter("creditCard");
             String expiryDate = request.getParameter("expiryDate");
-            User account = (User)session.getAttribute("loginUser");
+            UserInfo account = (UserInfo)session.getAttribute("loginUser");
 
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
@@ -111,8 +116,8 @@ public class OrderController {
 
             order.setShipAddress1(address1);
             order.setShipAddress2(address2);
-            order.setBillAddress1(account.getAddr1());
-            order.setBillAddress2(account.getAddr2());
+            order.setBillAddress1(account.getAddress1());
+            order.setBillAddress2(account.getAddress2());
 
 
             order.setShipCity(city);
