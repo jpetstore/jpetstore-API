@@ -1,6 +1,7 @@
 package org.csu.jpetstoreapi.controller;
 
 import com.alipay.api.AlipayApiException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.common.CommonResponse;
 import org.csu.jpetstoreapi.entity.User;
 import org.csu.jpetstoreapi.service.CartService;
@@ -10,18 +11,17 @@ import org.csu.jpetstoreapi.VO.CartItemVO;
 import org.csu.jpetstoreapi.VO.OrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@CrossOrigin
 @RequestMapping("/order/")
 public class OrderController {
 
@@ -34,6 +34,27 @@ public class OrderController {
     @Autowired
     private CartService cartService;
 
+    //退款申请
+    @RequestMapping("refundOrder")
+    @ResponseBody
+    public CommonResponse refundOrder(String orderid, String msg){
+        System.out.println(orderid+"11111111111111"+msg);
+        orderService.addRefundOrder(orderid, msg);
+        return CommonResponse.createForSuccess("退款申请已提交");
+    }
+
+    @GetMapping("getAllOrder")
+    @ResponseBody
+    public CommonResponse<List<OrderVO>>  getAllOrder(HttpSession session){
+        User account = (User)session.getAttribute("loginUser");
+        if(account==null){
+            return CommonResponse.createForError("请先登录");
+        }
+        List<OrderVO> orderVOList = orderService.getAllOrderVO(account.getId());
+        return CommonResponse.createForSuccess(orderVOList);
+    }
+
+    //根据购物车生成订单
     @GetMapping("getOrder")
     @ResponseBody
     public CommonResponse<OrderVO>  getOrder(HttpSession session){
@@ -94,8 +115,8 @@ public class OrderController {
 
             order.setShipAddress1(address1);
             order.setShipAddress2(address2);
-            order.setBillAddress1(account.getAddr1());
-            order.setBillAddress2(account.getAddr2());
+            order.setBillAddress1(account.getAddress1());
+            order.setBillAddress2(account.getAddress2());
 
 
             order.setShipCity(city);

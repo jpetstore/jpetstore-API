@@ -3,6 +3,7 @@ package org.csu.jpetstoreapi.VO;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.csu.jpetstoreapi.entity.User;
+import org.csu.jpetstoreapi.entity.UserInfo;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -72,8 +73,8 @@ public class OrderVO {
 
         shipToFirstName = account.getFirstname();
         shipToLastName = account.getLastname();
-        shipAddress1 = account.getAddr1();
-        shipAddress2 = account.getAddr2();
+        shipAddress1 = account.getAddress1();
+        shipAddress2 = account.getAddress2();
         shipCity = account.getCity();
         shipState = account.getState();
         shipZip = account.getZip();
@@ -81,8 +82,8 @@ public class OrderVO {
 
         billToFirstName = account.getFirstname();;
         billToLastName =account.getLastname();
-        billAddress1 = account.getAddr1();
-        billAddress2 = account.getAddr2();
+        billAddress1 = account.getAddress1();
+        billAddress2 = account.getAddress2();
         billCity = account.getCity();
         billState =account.getState();
         billZip = account.getZip();

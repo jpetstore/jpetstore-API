@@ -1,27 +1,29 @@
 package org.csu.jpetstoreapi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.VO.LineItemVO;
 import org.csu.jpetstoreapi.VO.OrderVO;
-import org.csu.jpetstoreapi.entity.LineItem;
-import org.csu.jpetstoreapi.entity.Order;
-import org.csu.jpetstoreapi.entity.OrderStatus;
-import org.csu.jpetstoreapi.entity.Sequence;
-import org.csu.jpetstoreapi.persistence.LineItemMapper;
-import org.csu.jpetstoreapi.persistence.OrderMapper;
-import org.csu.jpetstoreapi.persistence.OrderStatusMapper;
-import org.csu.jpetstoreapi.persistence.SequenceMapper;
+import org.csu.jpetstoreapi.entity.*;
+import org.csu.jpetstoreapi.persistence.*;
 import org.csu.jpetstoreapi.service.CartService;
 import org.csu.jpetstoreapi.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.sql.Wrapper;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 @Service("orderService")
 public class OrderServiceImpl implements OrderService {
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private RefundOrdersMapper refundOrdersMapper;
 
     @Autowired
     private OrderStatusMapper orderStatusMapper;
@@ -34,6 +36,43 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private LineItemMapper lineItemMapper;
+
+    //退款申请
+    public void addRefundOrder(String orderId, String msg){
+        //P完成付款 Q待处理 Y已退款 S拒绝退款
+        RefundOrders refundOrder = new RefundOrders();
+        refundOrder.setOrderid(orderId);
+        Order order = orderMapper.selectById(orderId);
+        OrderStatus orderStatus =orderStatusMapper.selectById(order.getOrderId());
+        System.out.println(orderStatus);
+        orderStatus.setStatus("Q");
+        orderStatusMapper.updateById(orderStatus);
+        refundOrder.setRefund_amount(order.getTotalPrice());
+        refundOrder.setRefund_reason(msg);
+        refundOrder.set_processed(false);
+        refundOrder.set_refused(false);
+        refundOrder.setRefuse_reason(null);
+        refundOrdersMapper.insert(refundOrder);
+    }
+
+    //获取对应用户的所有订单
+    public List<OrderVO> getAllOrderVO(String userId){
+        System.out.println(userId);
+        QueryWrapper<Order> queryWrapper= new QueryWrapper<>();
+        queryWrapper.eq("userid", userId);
+        List<Order> orderList = orderMapper.selectList(queryWrapper);
+        List<OrderVO> orderVOList = new ArrayList<>();
+        ListIterator<Order> orderListIterator = orderList.listIterator();
+        while(orderListIterator.hasNext()){
+            Order order = orderListIterator.next();
+            System.out.println(order);
+            OrderStatus orderStatus =orderStatusMapper.selectById(order.getOrderId());
+            System.out.println(orderStatus);
+            OrderVO orderVO = orderToOrderVO(order, orderStatus);
+            orderVOList.add(orderVO);
+        }
+        return orderVOList;
+    }
 
     public OrderVO getOrderVO(String orderId){
 
