@@ -120,7 +120,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public CommonResponse<List<Product>> searchProductList(String keyword){
 
-//        keyword = "%"+keyword.toLowerCase()+"%";
+        keyword = "%"+keyword.toLowerCase()+"%";
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("name",keyword);
 
