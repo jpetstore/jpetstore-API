@@ -218,6 +218,54 @@ public class UserController {
     @PostMapping("editAccount")
     @ResponseBody
 
+//    public CommonResponse<UserInfo> saveAccount(HttpServletRequest request,HttpSession session){
+//
+//        UserInfo userInfo = (UserInfo) session.getAttribute("loginUser");//当前登录的用户信息
+//        if(userInfo==null){
+//            return CommonResponse.createForError("请先登录");
+//        }
+//
+////        String id=request.getParameter("id");
+//        String password=request.getParameter("password");
+//        String firstname=request.getParameter("firstname");
+//        String lastname=request.getParameter("lastname");
+//        String email=request.getParameter("email");
+//        String phone=request.getParameter("phone");
+//        String addr1=request.getParameter("addr1");
+//        String addr2=request.getParameter("addr2");
+//        String city=request.getParameter("city");
+//        String state=request.getParameter("state");
+//        String zip=request.getParameter("zip");
+//        String country=request.getParameter("country");
+//        String status=request.getParameter("status");
+//        String languagepre=request.getParameter("languagepre");
+//        String favoritecata = request.getParameter("favoritecata");
+//        String iflist = request.getParameter("iflist");
+//        String ifbanner = request.getParameter("ifbanner");
+//
+//
+////        user.setId(id);
+//
+//        userInfo.setPassword(password);
+//        userInfo.setFirstname(firstname);
+//        userInfo.setLastname(lastname);
+//        userInfo.setEmail(email);
+//        userInfo.setPhone(phone);
+//        userInfo.setAddress1(addr1);
+//        userInfo.setAddress2(addr2);
+//        userInfo.setCity(city);
+//        userInfo.setState(state);
+//        userInfo.setZip(zip);
+//        userInfo.setCountry(country);
+//        userInfo.setStatus(status);
+//        userInfo.setLanguagepre(languagepre);
+//        userInfo.setFavoritecata(favoritecata);
+//        userInfo.setIflist(iflist);
+//        userInfo.setIfbanner(ifbanner);
+//
+//        CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
+//        return response;
+//    }
     public CommonResponse<UserInfo> saveAccount(HttpServletRequest request,HttpSession session){
 
         UserInfo userInfo = (UserInfo) session.getAttribute("loginUser");//当前登录的用户信息
@@ -231,20 +279,21 @@ public class UserController {
         String lastname=request.getParameter("lastname");
         String email=request.getParameter("email");
         String phone=request.getParameter("phone");
-        String addr1=request.getParameter("addr1");
-        String addr2=request.getParameter("addr2");
+        String addr1=request.getParameter("address1");
+        String addr2=request.getParameter("address2");
         String city=request.getParameter("city");
         String state=request.getParameter("state");
         String zip=request.getParameter("zip");
         String country=request.getParameter("country");
-        String status=request.getParameter("status");
         String languagepre=request.getParameter("languagepre");
-        String favoritecata = request.getParameter("favoritecata");
-        String iflist = request.getParameter("iflist");
-        String ifbanner = request.getParameter("ifbanner");
 
+
+        System.out.println(password);
 //        user.setId(id);
-        userInfo.setPassword(password);
+        if(password.length()<=12) {
+            userInfo.setPassword(password);
+            System.out.println("aaaaa");
+        }
         userInfo.setFirstname(firstname);
         userInfo.setLastname(lastname);
         userInfo.setEmail(email);
@@ -255,11 +304,8 @@ public class UserController {
         userInfo.setState(state);
         userInfo.setZip(zip);
         userInfo.setCountry(country);
-        userInfo.setStatus(status);
         userInfo.setLanguagepre(languagepre);
-        userInfo.setFavoritecata(favoritecata);
-        userInfo.setIflist(iflist);
-        userInfo.setIfbanner(ifbanner);
+        System.out.println(userInfo);
 
         CommonResponse<UserInfo> response=userInfoService.updateUser(userInfo);
         return response;
