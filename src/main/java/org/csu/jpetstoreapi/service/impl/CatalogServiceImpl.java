@@ -142,7 +142,10 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public byte[] getimage(String productId){
-        ImageOfProduct imageOfProduct = imageMapper.selectById(productId);
+        QueryWrapper<ImageOfProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("productId",productId);
+        ImageOfProduct imageOfProduct = imageMapper.selectOne(queryWrapper);
+//        ImageOfProduct imageOfProduct = imageMapper.selectById(productId);
         return imageOfProduct.getImage();
     }
 

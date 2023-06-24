@@ -95,7 +95,8 @@ public class CatalogController {
     }
 
     @RequestMapping(value = "/showImage")
-    public  void showImage(String productId, HttpServletResponse response, HttpServletRequest request) throws IOException, SQLException {
+    public  void showImage(HttpServletResponse response, HttpServletRequest request) throws IOException, SQLException {
+        String productId = request.getParameter("productId");
         byte[] bb=catalogService.getimage(productId);
         //从数据库读取出二进制数据……
         // 将图像输出到Servlet输出流中。
