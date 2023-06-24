@@ -9,10 +9,7 @@ import org.csu.jpetstoreapi.entity.Product;
 import org.csu.jpetstoreapi.service.CatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,6 +60,12 @@ public class CatalogController {
         return catalogService.getItemById(itemId);
     }
 
+    @PostMapping("search")
+    @ResponseBody
+    public CommonResponse<List<Product>> searchProduct(@RequestParam("keyword") String keyword){
+        System.out.println(keyword);
+        return catalogService.searchProductList(keyword);
+    }
 
     @GetMapping("searchThis")
     public void searchAutoComplete(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -88,8 +91,4 @@ public class CatalogController {
         }
 
     }
-
-
-
-
 }
