@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,5 +92,20 @@ public class CatalogController {
             response.getWriter().write(sb.toString());
         }
 
+    }
+
+    @RequestMapping(value = "/showImage")
+    public  void showImage(String productId, HttpServletResponse response, HttpServletRequest request) throws IOException, SQLException {
+        byte[] bb=catalogService.getimage(productId);
+        //从数据库读取出二进制数据……
+        // 将图像输出到Servlet输出流中。
+        ServletOutputStream sos = response.getOutputStream();
+        sos.write(bb, 0, bb.length);
+        sos.close();
+        // 禁止图像缓存。
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setDateHeader("Expires", 0);
+        response.setContentType("image/gif/png");
     }
 }

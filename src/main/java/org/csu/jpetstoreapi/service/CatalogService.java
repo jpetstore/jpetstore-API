@@ -17,6 +17,8 @@ public interface CatalogService {
     CommonResponse<ItemVO> getItemById(@PathVariable("id")String itemId);
     CommonResponse<List<Product>> searchProductList(String keyword);
 
+    public byte[] getimage(String productId);
+
     boolean isItemInStock(String itemId);
     ItemVO getItem(String itemId);
 }
