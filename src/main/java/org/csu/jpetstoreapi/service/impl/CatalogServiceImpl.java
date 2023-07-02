@@ -3,14 +3,8 @@ package org.csu.jpetstoreapi.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.jpetstoreapi.VO.ItemVO;
 import org.csu.jpetstoreapi.common.CommonResponse;
-import org.csu.jpetstoreapi.entity.Category;
-import org.csu.jpetstoreapi.entity.Item;
-import org.csu.jpetstoreapi.entity.ItemInventory;
-import org.csu.jpetstoreapi.entity.Product;
-import org.csu.jpetstoreapi.persistence.CategoryMapper;
-import org.csu.jpetstoreapi.persistence.ItemInventoryMapper;
-import org.csu.jpetstoreapi.persistence.ItemMapper;
-import org.csu.jpetstoreapi.persistence.ProductMapper;
+import org.csu.jpetstoreapi.entity.*;
+import org.csu.jpetstoreapi.persistence.*;
 import org.csu.jpetstoreapi.service.CatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +27,9 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Autowired
     private ItemInventoryMapper itemInventoryMapper;
+
+    @Autowired
+    private ImageMapper imageMapper;
 
     @Override
     public CommonResponse<List<Category>> getCategoryList() {
@@ -58,6 +55,12 @@ public class CatalogServiceImpl implements CatalogService {
         queryWrapper.eq("category",categoryId);
 
         List<Product> productList = productMapper.selectList(queryWrapper);
+//        for(Product pro:productList){
+//            String productId = pro.getProductId();
+//            byte[] bb=getimage(productId);
+//            String str = new String(bb);
+//            pro.setDescription(str);
+//        }
         if(productList.isEmpty()){
             return CommonResponse.createForSuccessMessage("该分类下没有Product子类");
         }
@@ -67,6 +70,9 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public CommonResponse<Product> getProductById(String productId) {
         Product product = productMapper.selectById(productId);
+//        byte[] bb=getimage(productId);
+//        String str = new String(bb);
+//        product.setDescription(str);
         if(product==null){
             return CommonResponse.createForSuccessMessage("没有该Id的product");
         }
@@ -120,7 +126,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public CommonResponse<List<Product>> searchProductList(String keyword){
 
-        keyword = "%"+keyword.toLowerCase()+"%";
+        //keyword = "%"+keyword.toLowerCase()+"%";
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("name",keyword);
 
@@ -134,6 +140,14 @@ public class CatalogServiceImpl implements CatalogService {
 
     }
 
+    @Override
+    public byte[] getimage(String productId){
+        QueryWrapper<ImageOfProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("productId",productId);
+        ImageOfProduct imageOfProduct = imageMapper.selectOne(queryWrapper);
+//        ImageOfProduct imageOfProduct = imageMapper.selectById(productId);
+        return imageOfProduct.getImage();
+    }
 
 
     private ItemVO itemToItemVO(Item item,Product product,ItemInventory itemInventory){
